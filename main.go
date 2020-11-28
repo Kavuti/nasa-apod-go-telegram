@@ -97,7 +97,7 @@ func getBotConfiguration() BotConfiguration {
 	configuration.Token = os.Getenv("NASA_APOD_TELEGRAM_BOT_TOKEN")
 	configuration.Debug = getBoolFromString(os.Getenv("NASA_APOD_TELEGRAM_BOT_DEBUG"))
 	configuration.Webhook = os.Getenv("NASA_APOD_TELEGRAM_BOT_WEBHOOK_URL")
-	configuration.WebhookPort = os.Getenv("NASA_APOD_TELEGRAM_BOT_WEBHOOK_PORT")
+	configuration.WebhookPort = os.Getenv("PORT")
 	if configuration.WebhookPort == "" {
 		configuration.WebhookPort = "8443"
 	}
