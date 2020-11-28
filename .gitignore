@@ -15,5 +15,3 @@
 # vendor/
 
 .env
-cert/cert.pem
-cert/key.pem
