@@ -37,12 +37,12 @@ func getConnectionURI() string {
 }
 
 func getData() {
-	rows, err := dbobj.Query("select * from users")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan()
-	}
+	// rows, err := dbobj.Query("select * from users")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer rows.Close()
+	// for rows.Next() {
+	// 	err := rows.Scan()
+	// }
 }
