@@ -1,16 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
-	"net/http"
 	"os"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	godotenv "github.com/joho/godotenv"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-// BotConfiguration an struct containing the data necessary to configure
-// a working bot. It's mainly used for environment variables.
+// BotConfiguration contains the basic parameters to configure the bot
 type BotConfiguration struct {
 	UpdatesMethod string
 	Token         string
@@ -30,65 +29,34 @@ func init() {
 func main() {
 	configuration := getBotConfiguration()
 
-	bot, err := tgbotapi.NewBotAPI(configuration.Token)
+	webhook := tb.Webhook{
+		Listen:         "0.0.0.0:" + configuration.WebhookPort,
+		MaxConnections: 40,
+		HasCustomCert:  false,
+		Endpoint: &tb.WebhookEndpoint{
+			PublicURL: configuration.Webhook,
+		},
+	}
+
+	fmt.Println(configuration)
+	bot, err := tb.NewBot(tb.Settings{
+		Token:   configuration.Token,
+		Verbose: configuration.Debug,
+		Poller:  &webhook,
+	})
 	if err != nil {
-		log.Panic(err)
+		log.Fatalf("%+v\n", err)
 	}
-
-	bot.Debug = configuration.Debug
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	if configuration.UpdatesMethod == "updates" {
-		startWithUpdates(bot, configuration)
-	} else {
-		startWithWebhook(bot, configuration)
-	}
-}
-
-func startWithUpdates(bot *tgbotapi.BotAPI, configuration BotConfiguration) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates, err := bot.GetUpdatesChan(u)
 
 	if err != nil {
-		log.Fatalln("Error obtaining UpdatesChannel")
+		log.Fatalf("%+v\n", err)
 	}
 
-	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
-			continue
-		}
+	bot.Handle("/start", func(m *tb.Message) {
+		bot.Send(m.Sender, "This bot delivers you every day the Nasa Astronomic Picture Of the Day")
+	})
 
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		msg.ReplyToMessageID = update.Message.MessageID
-
-		bot.Send(msg)
-	}
-}
-
-func startWithWebhook(bot *tgbotapi.BotAPI, configuration BotConfiguration) {
-	_, err := bot.SetWebhook(tgbotapi.NewWebhookWithCert(configuration.Webhook+"/"+configuration.Token, "cert/cert.pem"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	info, err := bot.GetWebhookInfo()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if info.LastErrorDate != 0 {
-		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
-	}
-	updates := bot.ListenForWebhook("/" + bot.Token)
-
-	//go http.ListenAndServeTLS("0.0.0.0:"+configuration.WebhookPort, "cert/cert.pem", "cert/key.pem", nil)
-	go http.ListenAndServe("0.0.0.0:"+configuration.WebhookPort, nil)
-	for update := range updates {
-		log.Printf("%+v\n", update)
-	}
+	bot.Start()
 }
 
 func getBotConfiguration() BotConfiguration {
