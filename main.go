@@ -43,6 +43,9 @@ func main() {
 		Token:   configuration.Token,
 		Verbose: configuration.Debug,
 		Poller:  &webhook,
+		Reporter: func(e error) {
+			fmt.Printf("%+v\n", e)
+		},
 	})
 	if err != nil {
 		log.Fatalf("%+v\n", err)
