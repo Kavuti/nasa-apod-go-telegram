@@ -2,12 +2,8 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"os"
-
-	_ "github.com/lib/pq"
-
-	godotenv "github.com/joho/godotenv"
+	// _ "github.com/lib/pq"
 )
 
 var dbobj sql.DB
@@ -18,18 +14,18 @@ type User struct {
 }
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Println("No .env file found")
-	}
-	dbobj, err := sql.Open("postgres", getConnectionURI())
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = dbobj.Ping()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// err := godotenv.Load(".env")
+	// if err != nil {
+	// 	log.Println("No .env file found")
+	// }
+	// dbobj, err := sql.Open("postgres", getConnectionURI())
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
+	// err = dbobj.Ping()
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 }
 
 func getConnectionURI() string {
