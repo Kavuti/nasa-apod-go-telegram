@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  bot:
+    build:
+      context: .
+      container_name: nasa-apod-telegram-go
+    image: nasa-apod-telegram-go
+    restart: unless-stopped
+    networks:
+      - nasa-apod-telegram-network
+  db:
+    image: postgres:13.1-alpine
+    container_name: nasa-apod-telegram-db
+    environment:
+      - "POSTGRES_USER=${DATABASE_USER}"
+      - "POSTGRES_PASSWORD=${DATABASE_PASSWORD}"
+      - "POSTGRES_DB=postgres"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - nasa-apod-telegram-db-volume:/var/lib/postgresql/data
+    networks:
+      - nasa-apod-telegram-network
+
+volumes:
+  nasa-apod-telegram-db-volume:
+    driver: local
+
+networks:
+  nasa-apod-telegram-network:
+    driver: bridge
