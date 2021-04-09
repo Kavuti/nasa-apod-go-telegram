@@ -1,1 +1,1 @@
-create database nasa-apod-telegram-db;
+create database nasa_apod_telegram_db;

@@ -57,12 +57,13 @@ func main() {
 
 	bot.Handle("/start", func(m *tb.Message) {
 		bot.Send(m.Sender, "This bot delivers you every day the Nasa Astronomic Picture Of the Day")
+		addUser(m.Sender)
 	})
 
 	bot.Handle("/sendallusersthepicture", func(m *tb.Message) {
 		users := getData()
 		for _, user := range users {
-			bot.Send(user, "HELLO")
+			bot.Send(&user, "HELLO")
 		}
 	})
 
