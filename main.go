@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	godotenv "github.com/joho/godotenv"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -29,20 +30,14 @@ func init() {
 func main() {
 	configuration := getBotConfiguration()
 
-	webhook := tb.Webhook{
-		Listen:         "0.0.0.0:" + configuration.WebhookPort,
-		MaxConnections: 40,
-		HasCustomCert:  false,
-		Endpoint: &tb.WebhookEndpoint{
-			PublicURL: configuration.Webhook,
-		},
-	}
+	var poller tb.Poller
+
+	poller = &tb.LongPoller{Timeout: 10 * time.Second}
 
 	fmt.Println(configuration)
 	bot, err := tb.NewBot(tb.Settings{
 		Token:   configuration.Token,
 		Verbose: configuration.Debug,
-		Poller:  &webhook,
 		Reporter: func(e error) {
 			fmt.Printf("%+v\n", e)
 		},
@@ -51,9 +46,25 @@ func main() {
 		log.Fatalf("%+v\n", err)
 	}
 
-	if err != nil {
-		log.Fatalf("%+v\n", err)
+	if configuration.UpdatesMethod == "webhook" {
+		if configuration.WebhookPort != "" {
+			poller = &tb.Webhook{
+				Listen:         "0.0.0.0:" + configuration.WebhookPort,
+				MaxConnections: 40,
+				HasCustomCert:  false,
+				Endpoint: &tb.WebhookEndpoint{
+					PublicURL: configuration.Webhook,
+				},
+			}
+		} else {
+			log.Println("No webhook port configuration found. The bot will use getUpdates method.")
+			bot.RemoveWebhook()
+		}
+	} else {
+		bot.RemoveWebhook()
 	}
+
+	bot.Poller = poller
 
 	bot.Handle("/start", func(m *tb.Message) {
 		bot.Send(m.Sender, "This bot delivers you every day the Nasa Astronomic Picture Of the Day")

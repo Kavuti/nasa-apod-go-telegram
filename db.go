@@ -10,14 +10,16 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-var dbobj sql.DB
+var dbobj *sql.DB
 
 func init() {
-	err := godotenv.Load(".env")
+	var err error
+	err = godotenv.Load(".env")
 	if err != nil {
 		log.Println("No .env file found")
 	}
-	dbobj, err := sql.Open("postgres", getConnectionURI())
+	log.Printf("Connecting to uri %s\n", getConnectionURI())
+	dbobj, err = sql.Open("postgres", getConnectionURI())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -65,7 +67,7 @@ func addUser(user *tb.User) {
 		log.Fatalln(err)
 	}
 	defer tx.Rollback()
-	stmt, err := dbobj.Prepare("INSERT INTO tg_user values (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT UPDATE")
+	stmt, err := dbobj.Prepare("INSERT INTO tg_user VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT DO NOTHING")
 	if err != nil {
 		log.Fatalln(err)
 		return
